@@ -4,13 +4,12 @@ import com.curso.base_spring_security.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.Map;
 
@@ -28,16 +27,17 @@ public class JwtService {
         Date expiration = new Date( issuedAt.getTime() + (EXPIRATION_MINUTES * 60 * 1000));
 
         return Jwts.builder()
-                .setClaims(extraClaims)
-                .setSubject(user.getUsername())
-                .setIssuedAt(issuedAt)
-                .setExpiration(expiration)
-                .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
-                .signWith(generateKey(), SignatureAlgorithm.HS256)
+                .claims(extraClaims)
+                .subject(user.getUsername())
+                .issuedAt(issuedAt)
+                .expiration(expiration)
+                //.setHeaderParam(Header.TYPE, Header.JWT_TYPE)
+                .header().add(Header.TYPE, Header.JWT_TYPE).and()
+                .signWith(generateKey())
                 .compact();
     }
 
-    private Key generateKey() {
+    private SecretKey generateKey() {
         try {
             byte [] secretAsBytes = Decoders.BASE64.decode(SECRET_KEY);
             System.out.println("mi clave es: " + new String(secretAsBytes));
@@ -52,7 +52,7 @@ public class JwtService {
     }
 
     private Claims getAllClaims(String jwt) {
-        return Jwts.parser().setSigningKey(generateKey()).build()
-                .parseClaimsJws(jwt).getBody();
+        return Jwts.parser().verifyWith(generateKey()).build()
+                .parseSignedClaims(jwt).getPayload();
     }
 }

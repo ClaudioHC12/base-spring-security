@@ -1,5 +1,6 @@
 package com.curso.base_spring_security.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,6 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class AuthenticationRequest {
+    @NotBlank
     private String userName;
+    @NotBlank
     private String password;
 }
